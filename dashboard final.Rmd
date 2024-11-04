@@ -1,0 +1,106 @@
+---
+title: "dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+#Importing libraries
+library(flexdashboard)
+library(tidyverse)
+library(highcharter)
+library(gt)
+library(htmltools)
+library(viridis)
+library(dplyr)
+library(readr)
+```
+
+```{r}
+#Importing data
+data <- read.csv("data_base.csv")
+#Data cleaning
+data_clean <- na.omit(data)
+data_clean <- distinct(data_clean)
+
+
+```
+
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Most popular neighbourhood group 
+
+```{r}
+#colors
+custom_colors <- viridis::mako( n = 4)
+
+#Most popular neighbourhood_group by number_of_reviews
+data_clean %>%
+  group_by(neighbourhood_group) %>%
+  summarise(number_of_reviews = sum(number_of_reviews)) %>%
+  arrange(desc(number_of_reviews)) %>%
+  head(4)%>%
+  hchart('column',hcaes(x = neighbourhood_group, y = number_of_reviews,color = custom_colors))%>%
+  hc_add_theme(hc_theme_sandsignika()) %>%
+  hc_tooltip(pointFormat = '<b>Number of reviews: </b> {point,y} <br>') %>%
+  hc_title(text = 'Most popular neighbourhood groups',
+           style = list(fontSize = '25px', fontWeight = 'bold')) %>%
+  hc_subtitle(text = 'By Number of Reviews',
+              style = list(fontSize = '16px')) %>%
+  hc_credits(enabled = TRUE, text = 'Suibgui Khaireddine')
+  
+  
+  
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Most Popular neighbourhood
+
+```{r}
+# colors
+custom_colors <- viridis::plasma(n = 15)
+
+# Most popular books by reviews
+data_clean %>%
+  arrange(desc(number_of_reviews)) %>%
+  head(15) %>%
+  hchart('bar', hcaes(x = neighbourhood, y = number_of_reviews, color = custom_colors)) %>%
+  hc_add_theme(hc_theme_google()) %>%
+  hc_tooltip(pointFormat = '<b>Number of Reviews: </b> {point.y} <br>') %>%
+  hc_title(text = 'Most Popular Neighbourhood',
+           style = list(fontSize = '25px', fontWeight = 'bold')) %>%
+  hc_subtitle(text = 'By Number of Reviews',
+              style = list(fontSize = '16px')) %>%
+  hc_credits(enabled = TRUE, text = 'Suibgui Khaireddine')
+
+```
+
+### Most common room type
+
+```{r}
+# colors
+custom_colors <- viridis::mako(n = 3)
+
+# Most common room type
+data_clean %>%
+  group_by(room_type) %>%
+  summarise(count = n()) %>%
+  hchart('pie', hcaes(x = room_type, y = count, color = custom_colors)) %>%
+  hc_add_theme(hc_theme_sandsignika()) %>%
+  hc_tooltip(pointFormat='<b>Proportion: </b> {point.percentage:,.2f}%') %>%
+  hc_title(text = 'Most Common Room Type',
+           style = list(fontSize = '15px', fontWeight = 'bold')) %>%
+  hc_credits(enabled = TRUE, text = 'Suibgui Khaireddine')
+```
+
+
+```
+

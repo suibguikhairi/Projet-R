@@ -1,0 +1,166 @@
+---
+title: "rapport"
+author: "Suibgui khaireddine"
+date: "2024-05-11"
+output:
+  pdf_document:
+        latex_engine: xelatex
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Analyse des réservations de logements pour une région 
+
+Chargement des bibliothèques 
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+library(readr)
+library(ggplot2)
+library(randomForest)
+library(caret)
+library(lattice)
+library(glmnet)
+library(tinytex)
+```
+
+Importation de la base de données et affichage des variables
+
+```{r}
+data <- read.csv("data_base.csv")
+names(data)
+```
+
+affichage de lignes de la base de données
+
+```{r}
+head(data)
+
+```
+
+Suppression des lignes avec des valeurs manquantes
+
+```{r}
+data_clean <- na.omit(data)
+head(data_clean)
+
+```
+
+Suppression des doublons
+
+```{r}
+data_clean <- distinct(data_clean)
+head(data_clean)
+```
+
+Affichage des statistiques descriptives
+
+```{r}
+summary(data_clean$price)
+
+```
+
+
+Calcul de la moyenne et de l'écart type des reviews
+
+```{r}
+summarized_data <- data %>%
+  summarize(mean_reviews = mean(number_of_reviews),
+            sd_reviews = sd(number_of_reviews),
+            median_reviews = median(number_of_reviews))
+head(summarized_data)
+```
+
+Calcul de la moyenne du prix par type de chambre
+
+```{r}
+aggregated_data <- data %>%
+  group_by(room_type) %>%
+  summarize(mean_price = mean(price))
+head(aggregated_data)
+```
+
+Création d'un graphique de visualisation de la disponibilité des chambres par neighbourhood
+
+```{r}
+ggplot(data = data, aes(x = neighbourhood_group, y = availability_365, fill = neighbourhood_group)) +
+  stat_summary(fun = "mean", geom = "bar") +
+  labs(title = "Disponibilité annuelle moyenne par neighbourhood_group",
+       x = "Neighbourhood Group",
+       y = "Availability 365") +
+  theme_minimal()
+```
+
+
+Créeation d'un graphique de visualisation des prix par neighbourhood_group
+
+
+```{r}
+
+ggplot(data = data, aes(x = neighbourhood_group, y = price)) +
+  geom_boxplot() +
+  labs(x = "Neighbourhood Group", y = "Price", title = "Distribution of Prices by Neighbourhood Group")
+
+```
+
+Créeation d'un graphique de visualisation des nuits passées par neighbourhood_group
+
+
+```{r}
+ggplot(data = data, aes(x = neighbourhood_group, y = minimum_nights, fill = neighbourhood_group)) +
+  geom_violin() +
+  labs(title = "Distribution de minimum_nights par neighbourhood_group",
+       x = "Neighbourhood Group",
+       y = "Minimum Nights",
+       fill = "Neighbourhood Group") +
+  theme_minimal()
+```
+
+
+Calcul de la moyenne de prix par quartier
+
+```{r}
+summarized_by_neighbourhood <- data %>%
+  group_by(neighbourhood) %>%
+  summarize(mean_price = mean(price))
+head(summarized_by_neighbourhood)
+```
+
+Exploration des prix par type de logement
+
+```{r}
+data_clean %>%
+  group_by(room_type) %>%
+  summarise(avg_price = mean(price)) %>%
+  ggplot(aes(x = room_type, y = avg_price)) +
+  geom_col() +  # Utilise geom_col() à la place de geom_bar()
+  labs(title = "Prix moyen par type de logement")
+```
+
+Création d'une carte de location 
+
+```{r}
+data_clean %>%
+  ggplot() +
+  geom_point(
+    mapping = aes(x = longitude, y = latitude, color = room_type),
+    size = 2
+  ) +
+  labs(title = "la carte des locations")
+```
+
+
+
+
+
+
+
+
+
+
+
